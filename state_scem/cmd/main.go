@@ -1,16 +1,15 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"net"
 
-	transport "github.com/junereycasuga/gokit-grpc-demo/transports"
-	_ "github.com/lib/pq"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	"github.com/go-kit/kit/log"
-
 	"github.com/go-kit/kit/log/level"
 
 	"os"
@@ -19,9 +18,8 @@ import (
 
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/endpoint"
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/service"
+	"github.com/lucthienbinh/golang_scem_microservice/state_scem/transport"
 )
-
-const dbsource = "postgresql://postgres:postgres@postgres:5432/state_scem_database?sslmode=disable"
 
 func main() {
 	var logger log.Logger
@@ -35,13 +33,24 @@ func main() {
 		)
 	}
 
+	if os.Getenv("RUNENV") != "docker" {
+		err := godotenv.Load()
+		if err != nil {
+			level.Error(logger).Log("exit", err)
+			os.Exit(-1)
+		}
+	}
+
 	level.Info(logger).Log("msg", "service started")
 	defer level.Info(logger).Log("msg", "service ended")
 
-	var db *sql.DB
+	var db *gorm.DB
 	{
 		var err error
-		db, err = sql.Open("postgres", dbsource)
+		db, err = gorm.Open(postgres.New(postgres.Config{
+			DSN:                  os.Getenv("POSTGRES_DSN"),
+			PreferSimpleProtocol: true, // disables implicit prepared statement usage
+		}), &gorm.Config{})
 		if err != nil {
 			level.Error(logger).Log("exit", err)
 			os.Exit(-1)
