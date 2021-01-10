@@ -5,17 +5,16 @@ import (
 )
 
 type (
-	// CreateWorkflowModelRequest structure
-	CreateWorkflowModelRequest struct {
+	// DeployWorkflowRequest structure
+	DeployWorkflowRequest struct {
 		WorkflowKey      string `json:"workflow_key"`
 		WorkflowVersion  int    `json:"workflow_version"`
 		WorkflowVariable []Repo.WorkflowVariable
 	}
-	// CreateWorkflowModelResponse structure
-	CreateWorkflowModelResponse struct {
-		WorkflowInstanceID uint   `json:"workflow_instance_id"`
-		Ok                 bool   `json:"ok"`
-		Error              string `json:"error"`
+	// DeployWorkflowlResponse structure
+	DeployWorkflowlResponse struct {
+		Ok    bool   `json:"ok"`
+		Error string `json:"error"`
 	}
 )
 

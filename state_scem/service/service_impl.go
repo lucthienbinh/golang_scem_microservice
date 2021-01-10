@@ -12,12 +12,12 @@ import (
 )
 
 type service struct {
-	repostory Repo.GRPCRepository
+	repostory Repo.Repository
 	logger    log.Logger
 }
 
 // NewService function
-func NewService(rep Repo.GRPCRepository, logger log.Logger) Service {
+func NewService(rep Repo.Repository, logger log.Logger) Service {
 	return &service{
 		repostory: rep,
 		logger:    logger,
