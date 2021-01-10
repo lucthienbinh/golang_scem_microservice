@@ -10,18 +10,6 @@ import (
 
 var errRepo = errors.New("Unable to handle Repo Request")
 
-// GRPCRepository interface
-type GRPCRepository interface {
-	CreateWorkflowModel(workflowModels []WorkflowModel) (bool, string)
-	CreateWorkflowInstance(workflowKey string, workflowVersion int, workflowVariables []WorkflowVariable) (uint, bool, string)
-	// // Job queue
-	// PollingJobWorker(jobName string) (uint, []WorkflowVariable)
-	// CompleteJob(jobQueueID uint) error
-	// FailJob(jobQueueID uint) error
-	// // Message queue
-	// PublishMessage(messageName, messageCorrelationName, messageCorrelationValue string) error
-}
-
 type grpcRepo struct {
 	db     *gorm.DB
 	logger log.Logger
