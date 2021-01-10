@@ -6,7 +6,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/go-kit/kit/log"
@@ -46,16 +46,13 @@ func main() {
 
 	var db *gorm.DB
 	{
+		dsn := os.Getenv("SQLITE_DSN")
 		var err error
-		db, err = gorm.Open(postgres.New(postgres.Config{
-			DSN:                  os.Getenv("POSTGRES_DSN"),
-			PreferSimpleProtocol: true, // disables implicit prepared statement usage
-		}), &gorm.Config{})
+		db, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 		if err != nil {
 			level.Error(logger).Log("exit", err)
 			os.Exit(-1)
 		}
-
 	}
 
 	addRepository := service.NewRepo(db, logger)

@@ -1,4 +1,4 @@
-package service
+package repo
 
 import (
 	"errors"
@@ -12,14 +12,14 @@ var errRepo = errors.New("Unable to handle Repo Request")
 
 // GRPCRepository interface
 type GRPCRepository interface {
-	DeployWorkflowModel(workflowModels []WorkflowModel) (int, error)
-	CreateWorkflowInstance(workflowKey string, workflowVersion int, workflowVariable []WorkflowVariable) (uint, error)
-	// Job queue
-	PollingJobWorker(jobName string) (uint, []WorkflowVariable)
-	CompleteJob(jobQueueID uint) error
-	FailJob(jobQueueID uint) error
-	// Message queue
-	PublishMessage(messageName, messageCorrelationName, messageCorrelationValue string) error
+	CreateWorkflowModel(workflowModels []WorkflowModel) (bool, string)
+	CreateWorkflowInstance(workflowKey string, workflowVersion int, workflowVariables []WorkflowVariable) (uint, bool, string)
+	// // Job queue
+	// PollingJobWorker(jobName string) (uint, []WorkflowVariable)
+	// CompleteJob(jobQueueID uint) error
+	// FailJob(jobQueueID uint) error
+	// // Message queue
+	// PublishMessage(messageName, messageCorrelationName, messageCorrelationValue string) error
 }
 
 type grpcRepo struct {
@@ -35,13 +35,13 @@ func NewGRPCRepo(db *gorm.DB, logger log.Logger) GRPCRepository {
 	}
 }
 
-func (repo *grpcRepo) DeployWorkflowModel(workflowModels []WorkflowModel) error {
+func (repo *grpcRepo) CreateWorkflowModel(workflowModels []WorkflowModel) (bool, string) {
 	workflowKey := workflowModels[0].WorkflowKey
 	workflowModel := &WorkflowModel{}
 	version := int(1)
 	if err := repo.db.Table("workflow_models as w").Select("w.workflow_version").Last(workflowModel, "w.workflow_key == ?", workflowKey).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
+			return false, err.Error()
 		}
 	}
 	version = workflowModel.WorkflowVersion + 1
@@ -49,9 +49,9 @@ func (repo *grpcRepo) DeployWorkflowModel(workflowModels []WorkflowModel) error 
 		workflowModels[i].WorkflowVersion = version
 	}
 	if err := repo.db.Model(&WorkflowModel{}).Create(workflowModels).Error; err != nil {
-		return err
+		return false, err.Error()
 	}
-	return nil
+	return true, ""
 }
 
 func (repo *grpcRepo) CreateWorkflowInstance(workflowKey string, workflowVersion int, workflowVariables []WorkflowVariable) (uint, bool, string) {
