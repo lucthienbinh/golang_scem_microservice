@@ -1,37 +1,40 @@
 package repo
 
+import "context"
+
 // Repository interface
 type Repository interface {
 	// WorkflowModel
-	CreateWorkflowModel(workflowModels WorkflowModel) (uint, bool, string)
+	CreateWorkflowModel(ctx context.Context, workflowModel WorkflowModel) (uint, bool, error)
+	GetWorkflowModelLastestVersionByProcessID(ctx context.Context, processID string) (WorkflowModel, bool, error)
 
 	// WorkflowInstance
-	CreateWorkflowInstance(workflowKey string, workflowVersion int) (uint, bool, string)
-	GetWorkflowInstanceList() ([]WorkflowInstance, bool, string)
-	GetWorkflowInstance(id uint) (WorkflowInstance, bool, string)
-	UpdateWorkflowInstance(id uint, workflowInstance WorkflowInstance) (bool, string)
+	CreateWorkflowInstance(ctx context.Context, workflowInstance WorkflowInstance) (uint, bool, error)
+	GetWorkflowInstanceList(ctx context.Context) ([]WorkflowInstance, bool, error)
+	GetWorkflowInstance(ctx context.Context, id uint) (WorkflowInstance, bool, error)
+	UpdateWorkflowInstance(ctx context.Context, id uint, workflowInstance WorkflowInstance) (bool, error)
 
 	// WorkflowRuningPath
-	CreateWorkflowRuningPath(workflowRuningPath WorkflowRuningPath) (uint, bool, string)
-	GetWorkflowRuningPathList() ([]WorkflowRuningPath, bool, string)
-	GetWorkflowRuningPathListByWFInstanceID(workflowInstanceID uint) ([]WorkflowRuningPath, bool, string)
-	UpdateWorkflowRuningPath(id uint, workflowRuningPath WorkflowRuningPath) (bool, string)
+	CreateWorkflowRuningPath(ctx context.Context, workflowRuningPath WorkflowRuningPath) (uint, bool, error)
+	GetWorkflowRuningPathList(ctx context.Context) ([]WorkflowRuningPath, bool, error)
+	GetWorkflowRuningPathListByWFInstanceID(ctx context.Context, workflowInstanceID uint) ([]WorkflowRuningPath, bool, error)
+	UpdateWorkflowRuningPath(ctx context.Context, id uint, workflowRuningPath WorkflowRuningPath) (bool, error)
 
 	// WorkflowVariable
-	CreateWorkflowVariable(workflowVariable WorkflowVariable) (uint, bool, string)
-	GetWorkflowVariableList() ([]WorkflowVariable, bool, string)
-	GetWorkflowVariableListByWFInstanceID(workflowInstanceID uint) ([]WorkflowVariable, bool, string)
-	UpdateWorkflowVariable(id uint, workflowVariable WorkflowVariable) (bool, string)
+	CreateWorkflowVariable(ctx context.Context, workflowVariable WorkflowVariable) (uint, bool, error)
+	GetWorkflowVariableList(ctx context.Context) ([]WorkflowVariable, bool, error)
+	GetWorkflowVariableListByWFInstanceID(ctx context.Context, workflowInstanceID uint) ([]WorkflowVariable, bool, error)
+	UpdateWorkflowVariable(ctx context.Context, id uint, workflowVariable WorkflowVariable) (bool, error)
 
 	// WorkflowJobQueue
-	CreateWorkflowJobQueue(workflowJobQueue WorkflowJobQueue) (uint, bool, string)
-	GetWorkflowJobQueueList() ([]WorkflowJobQueue, bool, string)
-	GetWorkflowJobQueueListByName(name string) ([]WorkflowJobQueue, bool, string)
-	UpdateWorkflowJobQueue(id uint, workflowJobQueue WorkflowJobQueue) (bool, string)
+	CreateWorkflowJobQueue(ctx context.Context, workflowJobQueue WorkflowJobQueue) (uint, bool, error)
+	GetWorkflowJobQueueList(ctx context.Context) ([]WorkflowJobQueue, bool, error)
+	GetWorkflowJobQueueListByName(ctx context.Context, name string) ([]WorkflowJobQueue, bool, error)
+	UpdateWorkflowJobQueue(ctx context.Context, id uint, workflowJobQueue WorkflowJobQueue) (bool, error)
 
 	// WorkflowMessageQueue
-	CreateWorkflowMessageQueue(workflowMessageQueue WorkflowMessageQueue) (uint, bool, string)
-	GetWorkflowMessageQueueList() ([]WorkflowMessageQueue, bool, string)
-	GetWorkflowMessageQueueListbyName(name string) ([]WorkflowMessageQueue, bool, string)
-	UpdateWorkflowMessageQueue(id uint, workflowMessageQueue WorkflowMessageQueue) (bool, string)
+	CreateWorkflowMessageQueue(ctx context.Context, workflowMessageQueue WorkflowMessageQueue) (uint, bool, error)
+	GetWorkflowMessageQueueList(ctx context.Context) ([]WorkflowMessageQueue, bool, error)
+	GetWorkflowMessageQueueListbyName(ctx context.Context, name string) ([]WorkflowMessageQueue, bool, error)
+	UpdateWorkflowMessageQueue(ctx context.Context, id uint, workflowMessageQueue WorkflowMessageQueue) (bool, error)
 }

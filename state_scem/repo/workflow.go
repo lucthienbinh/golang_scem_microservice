@@ -5,6 +5,7 @@ package repo
 // WorkflowModel structure
 type WorkflowModel struct {
 	ID                     uint   `gorm:"primary_key;<-:false" json:"id"`
+	WorkflowProcessID      string `json:"workflow_process_id"`
 	WorkflowVersion        int    `json:"workflow_version"`
 	WorkflowKey            string `json:"workflow_key"`
 	Step                   int    `json:"step"`
@@ -18,16 +19,16 @@ type WorkflowModel struct {
 
 // WorkflowInstance structure
 type WorkflowInstance struct {
-	ID              uint   `gorm:"primary_key;<-:false" json:"id"`
-	WorkflowVersion int    `json:"workflow_version"`
-	WorkflowKey     string `json:"workflow_key"`
-	CurrentStep     int    `json:"current_step"`
-	CurrentType     int    `json:"current_type"`
-	CurrentName     uint   `json:"current_name"`
-	Running         bool   `json:"running"`
-	Finished        bool   `json:"finished"`
-	Failed          bool   `json:"failed"`
-	Canceled        bool   `json:"canceled"`
+	ID                uint   `gorm:"primary_key;<-:false" json:"id"`
+	WorkflowProcessID string `json:"workflow_process_id"`
+	WorkflowVersion   int    `json:"workflow_version"`
+	CurrentStep       int    `json:"current_step"`
+	CurrentType       int    `json:"current_type"`
+	CurrentName       uint   `json:"current_name"`
+	Running           bool   `json:"running"`
+	Finished          bool   `json:"finished"`
+	Failed            bool   `json:"failed"`
+	Canceled          bool   `json:"canceled"`
 }
 
 // WorkflowRuningPath structure

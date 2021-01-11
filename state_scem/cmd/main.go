@@ -17,6 +17,7 @@ import (
 	"syscall"
 
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/endpoint"
+	"github.com/lucthienbinh/golang_scem_microservice/state_scem/repo"
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/service"
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/transport"
 )
@@ -55,7 +56,7 @@ func main() {
 		}
 	}
 
-	addRepository := service.NewRepo(db, logger)
+	addRepository := repo.NewSQLRepo(db, logger)
 	addService := service.NewService(addRepository, logger)
 	addEndpoints := endpoint.MakeEndpoints(addService)
 	grpcServer := transport.NewGRPCServer(addEndpoints, logger)

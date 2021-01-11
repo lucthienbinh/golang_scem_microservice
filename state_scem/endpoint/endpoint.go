@@ -7,33 +7,32 @@ import (
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/service"
 )
 
+// Endpoints structure
 type Endpoints struct {
-	CreateUser endpoint.Endpoint
-	GetUser    endpoint.Endpoint
+	DeployWorkflow         endpoint.Endpoint
+	CreateWorkflowInstance endpoint.Endpoint
 }
 
+// MakeEndpoints function
 func MakeEndpoints(s service.Service) Endpoints {
 	return Endpoints{
-		CreateUser: makeCreateUserEndpoint(s),
-		GetUser:    makeGetUserEndpoint(s),
+		DeployWorkflow:         makeDeployWorkflowEndpoint(s),
+		CreateWorkflowInstance: makeCreateWorkflowInstanceEndpoint(s),
 	}
 }
 
-func makeCreateUserEndpoint(s service.Service) endpoint.Endpoint {
+func makeDeployWorkflowEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(CreateUserRequest)
-		ok, err := s.CreateUser(ctx, req.Email, req.Password)
-		return CreateUserResponse{Ok: ok}, err
+		req := request.(DeployWorkflowRequest)
+		workflowKey, ok, err := s.DeployWorkflow(ctx, req.WorkflowModelList)
+		return DeployWorkflowlResponse{WorkflowKey: workflowKey, Ok: ok}, err
 	}
 }
 
-func makeGetUserEndpoint(s service.Service) endpoint.Endpoint {
+func makeCreateWorkflowInstanceEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(GetUserRequest)
-		email, err := s.GetUser(ctx, req.Id)
-
-		return GetUserResponse{
-			Email: email,
-		}, err
+		req := request.(CreateWorkflowInstanceRequest)
+		newInstanceID, ok, err := s.CreateWorkflowInstance(ctx, req.WorkflowProcessID, req.WorkflowVariableList)
+		return CreateWorkflowInstanceResponse{WorkflowInstanceID: newInstanceID, Ok: ok}, err
 	}
 }

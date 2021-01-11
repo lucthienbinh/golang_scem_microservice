@@ -7,28 +7,24 @@ import (
 type (
 	// DeployWorkflowRequest structure
 	DeployWorkflowRequest struct {
-		WorkflowKey      string `json:"workflow_key"`
-		WorkflowVersion  int    `json:"workflow_version"`
-		WorkflowVariable []Repo.WorkflowVariable
+		WorkflowModelList []Repo.WorkflowModel
 	}
 	// DeployWorkflowlResponse structure
 	DeployWorkflowlResponse struct {
-		Ok    bool   `json:"ok"`
-		Error string `json:"error"`
+		WorkflowKey string
+		Ok          bool
 	}
 )
 
 type (
 	// CreateWorkflowInstanceRequest structure
 	CreateWorkflowInstanceRequest struct {
-		WorkflowKey      string `json:"workflow_key"`
-		WorkflowVersion  int    `json:"workflow_version"`
-		WorkflowVariable []Repo.WorkflowVariable
+		WorkflowProcessID    string
+		WorkflowVariableList []Repo.WorkflowVariable
 	}
 	// CreateWorkflowInstanceResponse structure
 	CreateWorkflowInstanceResponse struct {
-		WorkflowInstanceID uint   `json:"workflow_instance_id"`
-		Ok                 bool   `json:"ok"`
-		Error              string `json:"error"`
+		WorkflowInstanceID uint
+		Ok                 bool
 	}
 )
