@@ -9,22 +9,22 @@ import (
 
 // Endpoints structure
 type Endpoints struct {
-	DeployWorkflow         endpoint.Endpoint
-	CreateWorkflowInstance endpoint.Endpoint
+	DeployWorkflowEndpoint         endpoint.Endpoint
+	CreateWorkflowInstanceEndpoint endpoint.Endpoint
 }
 
 // MakeEndpoints function
 func MakeEndpoints(s service.Service) Endpoints {
 	return Endpoints{
-		DeployWorkflow:         makeDeployWorkflowEndpoint(s),
-		CreateWorkflowInstance: makeCreateWorkflowInstanceEndpoint(s),
+		DeployWorkflowEndpoint:         makeDeployWorkflowEndpoint(s),
+		CreateWorkflowInstanceEndpoint: makeCreateWorkflowInstanceEndpoint(s),
 	}
 }
 
 func makeDeployWorkflowEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeployWorkflowRequest)
-		workflowKey, ok, err := s.DeployWorkflow(ctx, req.WorkflowModelList)
+		workflowKey, ok, err := s.DeployWorkflowService(ctx, req.WorkflowModelList)
 		return DeployWorkflowlResponse{WorkflowKey: workflowKey, Ok: ok}, err
 	}
 }
@@ -32,7 +32,7 @@ func makeDeployWorkflowEndpoint(s service.Service) endpoint.Endpoint {
 func makeCreateWorkflowInstanceEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateWorkflowInstanceRequest)
-		newInstanceID, ok, err := s.CreateWorkflowInstance(ctx, req.WorkflowProcessID, req.WorkflowVariableList)
+		newInstanceID, ok, err := s.CreateWorkflowInstanceService(ctx, req.WorkflowProcessID, req.WorkflowVariableList)
 		return CreateWorkflowInstanceResponse{WorkflowInstanceID: newInstanceID, Ok: ok}, err
 	}
 }

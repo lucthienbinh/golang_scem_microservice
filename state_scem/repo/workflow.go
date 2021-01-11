@@ -10,7 +10,7 @@ type WorkflowModel struct {
 	WorkflowKey            string `json:"workflow_key"`
 	Step                   int    `json:"step"`
 	Type                   int    `json:"type"`
-	Name                   uint   `json:"name"`
+	Name                   string `json:"name"`
 	NextStep1              int    `json:"next_step_1"`
 	NextStep2              int    `json:"next_step_2"`
 	ServiceRetry           int    `json:"service_retry"`
@@ -24,7 +24,7 @@ type WorkflowInstance struct {
 	WorkflowVersion   int    `json:"workflow_version"`
 	CurrentStep       int    `json:"current_step"`
 	CurrentType       int    `json:"current_type"`
-	CurrentName       uint   `json:"current_name"`
+	CurrentName       string `json:"current_name"`
 	Running           bool   `json:"running"`
 	Finished          bool   `json:"finished"`
 	Failed            bool   `json:"failed"`
@@ -64,7 +64,7 @@ type WorkflowJobQueue struct {
 type WorkflowMessageQueue struct {
 	ID                      uint   `json:"id"`
 	WorkflowInstanceID      uint   `json:"workflow_instance_id"`
-	Name                    uint   `json:"name"`
+	Name                    string `json:"name"`
 	MessageCorrelationName  string `json:"message_correlation_name"`
 	MessageCorrelationValue int    `json:"message_correlation_value"`
 	Finished                bool   `json:"finished"`

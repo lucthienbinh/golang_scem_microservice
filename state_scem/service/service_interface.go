@@ -8,6 +8,6 @@ import (
 
 // Service interface
 type Service interface {
-	DeployWorkflow(ctx context.Context, workflowModelList []Repo.WorkflowModel) (string, bool, error)
-	CreateWorkflowInstance(ctx context.Context, processID string, workflowVariableList []Repo.WorkflowVariable) (uint, bool, error)
+	DeployWorkflowService(ctx context.Context, workflowModelList []Repo.WorkflowModel) (string, bool, error)
+	CreateWorkflowInstanceService(ctx context.Context, processID string, workflowVariableList []Repo.WorkflowVariable) (uint, bool, error)
 }

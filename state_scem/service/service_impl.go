@@ -22,7 +22,7 @@ func NewService(rep Repo.Repository, logger log.Logger) Service {
 	}
 }
 
-func (s service) DeployWorkflow(ctx context.Context, workflowModelList []Repo.WorkflowModel) (string, bool, error) {
+func (s service) DeployWorkflowService(ctx context.Context, workflowModelList []Repo.WorkflowModel) (string, bool, error) {
 	logger := log.With(s.logger, "service", "DeployWorkflow")
 	uuid, _ := uuid.NewV4()
 	workflowKey := uuid.String()
@@ -47,7 +47,7 @@ func (s service) DeployWorkflow(ctx context.Context, workflowModelList []Repo.Wo
 	return workflowKey, true, nil
 }
 
-func (s service) CreateWorkflowInstance(ctx context.Context, processID string, workflowVariableList []Repo.WorkflowVariable) (uint, bool, error) {
+func (s service) CreateWorkflowInstanceService(ctx context.Context, processID string, workflowVariableList []Repo.WorkflowVariable) (uint, bool, error) {
 	logger := log.With(s.logger, "service", "CreateWorkflowInstance")
 
 	workflowModel, ok, err := s.repostory.GetWorkflowModelLastestVersionByProcessID(ctx, processID)
