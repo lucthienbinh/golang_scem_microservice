@@ -56,7 +56,7 @@ func decodeDeployWorkflowRequest(_ context.Context, request interface{}) (interf
 		workflowModelDecoded.NextStep2 = int(workflowModel.NextStep2)
 		workflowModelDecoded.ServiceRetry = int(workflowModel.ServiceRetry)
 		workflowModelDecoded.MessageCorrelationName = workflowModel.MessageCorrelationName
-		workflowModelListDecoded = append(workflowModelListDecoded)
+		workflowModelListDecoded = append(workflowModelListDecoded, workflowModelDecoded)
 	}
 	return endpoint.DeployWorkflowRequest{WorkflowModelList: workflowModelListDecoded}, nil
 }

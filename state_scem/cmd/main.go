@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net"
-	"time"
+	"net/http"
 
 	"github.com/joho/godotenv"
+	"github.com/vardius/gorouter"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
@@ -18,27 +21,26 @@ import (
 	"os/signal"
 	"syscall"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/endpoint"
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/pb"
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/repo"
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/service"
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/transport"
+
+	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
+	stdprometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var kaep = keepalive.EnforcementPolicy{
-	MinTime:             5 * time.Second, // If a client pings more than once every 5 seconds, terminate the connection
-	PermitWithoutStream: true,            // Allow pings even when there are no active streams
-}
-
-var kasp = keepalive.ServerParameters{
-	MaxConnectionIdle:     15 * time.Second, // If a client is idle for 15 seconds, send a GOAWAY
-	MaxConnectionAge:      30 * time.Second, // If any connection is alive for more than 30 seconds, send a GOAWAY
-	MaxConnectionAgeGrace: 5 * time.Second,  // Allow 5 seconds for pending RPCs to complete before forcibly closing connections
-	Time:                  5 * time.Second,  // Ping the client if it is idle for 5 seconds to ensure the connection is still active
-	Timeout:               1 * time.Second,  // Wait 1 second for the ping ack before assuming the connection is dead
-}
+var (
+	customFunc   grpc_recovery.RecoveryHandlerFunc
+	loggerGlobal log.Logger
+)
 
 func main() {
+	// --------------- Define Log template ---------------
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(os.Stderr)
@@ -49,6 +51,9 @@ func main() {
 			"caller", log.DefaultCaller,
 		)
 	}
+	loggerGlobal = logger
+	level.Info(logger).Log("msg", "service started")
+	defer level.Info(logger).Log("msg", "service ended")
 
 	if os.Getenv("RUNENV") != "docker" {
 		err := godotenv.Load()
@@ -58,9 +63,7 @@ func main() {
 		}
 	}
 
-	level.Info(logger).Log("msg", "service started")
-	defer level.Info(logger).Log("msg", "service ended")
-
+	// --------------- Connnect database ---------------
 	var db *gorm.DB
 	{
 		dsn := os.Getenv("SQLITE_DSN")
@@ -73,11 +76,39 @@ func main() {
 		level.Info(logger).Log("msg", "database connected")
 	}
 
+	// --------------- Migrate database ---------------
+	initRepo := repo.NewSQLInitRepo(db, logger)
+	// BECAREFUL OF THESE LINES WILL WIPE OUT ALL OF YOUR DATA
+	if err := initRepo.DeleteDatabase(context.Background()); err != nil {
+		level.Error(logger).Log("exit", err)
+		os.Exit(1)
+	}
+	if err := initRepo.MigrationDatabase(context.Background()); err != nil {
+		level.Error(logger).Log("exit", err)
+		os.Exit(1)
+	}
+	level.Info(logger).Log("msg", "database migrated")
+
+	// --------------- Create new implement instance ---------------
+	fieldKeys := []string{"method", "error"}
+	requestCount := kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
+		Namespace: "scem_group",
+		Subsystem: "state_service",
+		Name:      "request_count",
+		Help:      "Number of requests received.",
+	}, fieldKeys)
+	requestLatency := kitprometheus.NewSummaryFrom(stdprometheus.SummaryOpts{
+		Namespace: "scem_group",
+		Subsystem: "state_service",
+		Name:      "request_latency_microseconds",
+		Help:      "Total duration of requests in microseconds.",
+	}, fieldKeys)
 	addRepository := repo.NewSQLRepo(db, logger)
 	addService := service.NewService(addRepository, logger)
-	addEndpoints := endpoint.MakeEndpoints(addService)
+	addEndpoints := endpoint.MakeEndpoints(addService, requestCount, requestLatency)
 	grpcServer := transport.NewGRPCServer(addEndpoints, logger)
 
+	// --------------- Listen to kill signal ---------------
 	errs := make(chan error)
 	go func() {
 		c := make(chan os.Signal, 1)
@@ -85,18 +116,60 @@ func main() {
 		errs <- fmt.Errorf("%s", <-c)
 	}()
 
+	// --------------- Define GRPC server ---------------
 	grpcListener, err := net.Listen("tcp", os.Getenv("GRPC_PORT"))
 	if err != nil {
-		logger.Log("during", "Listen", "err", err)
+		level.Error(logger).Log("exit", err)
 		os.Exit(1)
 	}
 
+	// --------------- Handle GRPC panic ---------------
+	// Define customfunc to handle panic
+	customFunc = func(p interface{}) (err error) {
+		return status.Errorf(codes.Unknown, "panic triggered: %v", p)
+	}
+	// Shared options for the logger, with a custom gRPC code to log level function.
+	opts := []grpc_recovery.Option{
+		grpc_recovery.WithRecoveryHandler(customFunc),
+	}
+
+	// Register GRPC server and implement instance
 	go func() {
-		baseServer := grpc.NewServer(grpc.KeepaliveEnforcementPolicy(kaep), grpc.KeepaliveParams(kasp))
+		baseServer := grpc.NewServer(grpc_middleware.WithUnaryServerChain(
+			grpc_recovery.UnaryServerInterceptor(opts...),
+		),
+		)
 		pb.RegisterStateScemServiceServer(baseServer, grpcServer)
-		level.Info(logger).Log("msg", "Server started successfully 🚀")
+		level.Info(logger).Log("msg", "Server GRPC started successfully 🚀 at port 9001")
 		baseServer.Serve(grpcListener)
 	}()
 
+	// --------------- Define HTTP server ---------------
+	go func() {
+		router := gorouter.New(recoverMiddleware)
+		router.GET("/metrics", promhttp.Handler())
+		level.Info(logger).Log("msg", "Server HTTP started successfully 🚁 at port 9002")
+		err2 := http.ListenAndServe(os.Getenv("HTTP_PORT"), router)
+		if err2 != nil {
+			level.Error(logger).Log("exit", err)
+			os.Exit(1)
+		}
+	}()
+
 	level.Error(logger).Log("exit", <-errs)
+}
+
+func recoverMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rcv := recover(); rcv != nil {
+				level.Error(loggerGlobal).Log("err", "Internal Server Error")
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	}
+
+	return http.HandlerFunc(fn)
 }

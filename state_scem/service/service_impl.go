@@ -33,17 +33,16 @@ func (s service) DeployWorkflowService(ctx context.Context, workflowModelList []
 		level.Error(logger).Log("err", err)
 		return "", false, err
 	}
-
+	newWorkflowVersion := oldWorkflowModel.WorkflowVersion + 1
 	for _, workflowModel := range workflowModelList {
-		workflowModel.WorkflowVersion = oldWorkflowModel.WorkflowVersion + 1
+		workflowModel.WorkflowVersion = newWorkflowVersion
 		workflowModel.WorkflowKey = workflowKey
-		if _, ok, err := s.repostory.CreateWorkflowModel(ctx, workflowModel); ok != false {
+		if _, ok, err := s.repostory.CreateWorkflowModel(ctx, workflowModel); ok == false {
 			level.Error(logger).Log("err", err)
 			return "", false, err
 		}
 	}
-
-	logger.Log("workflow key", workflowKey)
+	level.Info(logger).Log("workflow key", workflowKey)
 	return workflowKey, true, nil
 }
 
@@ -59,7 +58,7 @@ func (s service) CreateWorkflowInstanceService(ctx context.Context, processID st
 	workflowInstance.WorkflowProcessID = processID
 	workflowInstance.WorkflowVersion = workflowModel.WorkflowVersion // Auto get lastest workflow version
 	newInstanceID, ok, err := s.repostory.CreateWorkflowInstance(ctx, workflowInstance)
-	if ok != false {
+	if ok == false {
 		level.Error(logger).Log("err", err)
 		return uint(0), false, err
 	}
@@ -67,12 +66,11 @@ func (s service) CreateWorkflowInstanceService(ctx context.Context, processID st
 	for _, workflowVariable := range workflowVariableList {
 		workflowVariable.ID = 0
 		workflowVariable.WorkflowInstanceID = newInstanceID
-		if _, ok, err := s.repostory.CreateWorkflowVariable(ctx, workflowVariable); ok != false {
+		if _, ok, err := s.repostory.CreateWorkflowVariable(ctx, workflowVariable); ok == false {
 			level.Error(logger).Log("err", err)
 			return uint(0), false, err
 		}
 	}
-
-	logger.Log("workflow instance id", newInstanceID)
+	level.Info(logger).Log("workflow instance id", newInstanceID)
 	return newInstanceID, true, nil
 }

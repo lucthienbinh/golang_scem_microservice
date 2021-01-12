@@ -38,3 +38,9 @@ type Repository interface {
 	GetWorkflowMessageQueueListbyName(ctx context.Context, name string) ([]WorkflowMessageQueue, bool, error)
 	UpdateWorkflowMessageQueue(ctx context.Context, id uint, workflowMessageQueue WorkflowMessageQueue) (bool, error)
 }
+
+// InitRepository interface
+type InitRepository interface {
+	DeleteDatabase(ctx context.Context) error
+	MigrationDatabase(ctx context.Context) error
+}
