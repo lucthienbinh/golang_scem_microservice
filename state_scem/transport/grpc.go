@@ -2,19 +2,20 @@ package transport
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-kit/kit/log"
 	gt "github.com/go-kit/kit/transport/grpc"
 	"github.com/lucthienbinh/golang_scem_microservice/state_scem/endpoint"
 	pb "github.com/lucthienbinh/golang_scem_microservice/state_scem/pb"
-	Repo "github.com/lucthienbinh/golang_scem_microservice/state_scem/repo"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type gRPCServer struct {
 	// server is used to implement pb.StateScemServiceServer.
 	pb.UnimplementedStateScemServiceServer
-	deployWorkflow gt.Handler
-	// createWorkflowInstance gt.Handler
+	deployWorkflow         gt.Handler
+	createWorkflowInstance gt.Handler
 }
 
 // NewGRPCServer initializes a new gRPC server
@@ -25,11 +26,11 @@ func NewGRPCServer(endpoint endpoint.Endpoints, logger log.Logger) pb.StateScemS
 			decodeDeployWorkflowRequest,
 			encodeDeployWorkflowlResponse,
 		),
-		// createWorkflowInstance: gt.NewServer(
-		// 	endpoint.CreateWorkflowInstance,
-		// 	decodeMathRequest,
-		// 	encodeMathResponse,
-		// ),
+		createWorkflowInstance: gt.NewServer(
+			endpoint.CreateWorkflowInstanceEndpoint,
+			decodeCreateWorkflowInstanceRequest,
+			encodeCreateWorkflowInstanceResponse,
+		),
 	}
 }
 
@@ -42,26 +43,33 @@ func (s *gRPCServer) DeployWorkflow(ctx context.Context, req *pb.DeployWorkflowR
 }
 
 func decodeDeployWorkflowRequest(_ context.Context, request interface{}) (interface{}, error) {
-	workflowModelListDecoded := []Repo.WorkflowModel{}
-	req := request.(*pb.DeployWorkflowRequest) // Struct from generated file
-	for _, workflowModel := range req.WorkflowModel {
-		workflowModelDecoded := Repo.WorkflowModel{}
-		workflowModelDecoded.WorkflowProcessID = workflowModel.WorkflowProcessID
-		workflowModelDecoded.WorkflowVersion = int(workflowModel.WorkflowVersion)
-		workflowModelDecoded.WorkflowKey = workflowModel.WorkflowKey
-		workflowModelDecoded.Step = int(workflowModel.Step)
-		workflowModelDecoded.Type = int(workflowModel.Type)
-		workflowModelDecoded.Name = workflowModel.Name
-		workflowModelDecoded.NextStep1 = int(workflowModel.NextStep1)
-		workflowModelDecoded.NextStep2 = int(workflowModel.NextStep2)
-		workflowModelDecoded.ServiceRetry = int(workflowModel.ServiceRetry)
-		workflowModelDecoded.MessageCorrelationName = workflowModel.MessageCorrelationName
-		workflowModelListDecoded = append(workflowModelListDecoded, workflowModelDecoded)
-	}
-	return endpoint.DeployWorkflowRequest{WorkflowModelList: workflowModelListDecoded}, nil
+	req := request.(*pb.DeployWorkflowRequest)
+	requestDecoded := endpoint.DeployWorkflowRequest{}
+	// Parse to jsonpb of pb
+	byteValue, _ := protojson.Marshal(req)
+	// Parse json to struct
+	json.Unmarshal(byteValue, &requestDecoded)
+	return endpoint.DeployWorkflowRequest{WorkflowModelList: requestDecoded.WorkflowModelList}, nil
 }
 
 func encodeDeployWorkflowlResponse(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(endpoint.DeployWorkflowlResponse)
-	return &pb.DeployWorkflowlResponse{WorkflowKey: resp.WorkflowKey, Ok: resp.Ok}, nil // Struct rom generated file
+	return &pb.DeployWorkflowlResponse{WorkflowKey: resp.WorkflowKey, Ok: resp.Ok}, nil
+}
+
+func decodeCreateWorkflowInstanceRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req := request.(*pb.CreateWorkflowInstanceRequest)
+	requestDecoded := endpoint.CreateWorkflowInstanceRequest{}
+	// Parse to jsonpb of pb
+	byteValue, _ := protojson.Marshal(req)
+	// Parse json to struct
+	json.Unmarshal(byteValue, &requestDecoded)
+	return endpoint.CreateWorkflowInstanceRequest{
+		WorkflowProcessID:    requestDecoded.WorkflowProcessID,
+		WorkflowVariableList: requestDecoded.WorkflowVariableList}, nil
+}
+
+func encodeCreateWorkflowInstanceResponse(_ context.Context, response interface{}) (interface{}, error) {
+	resp := response.(endpoint.CreateWorkflowInstanceResponse)
+	return &pb.CreateWorkflowInstanceResponse{WorkflowInstanceID: int32(resp.WorkflowInstanceID), Ok: resp.Ok}, nil
 }

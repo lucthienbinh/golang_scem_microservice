@@ -7,7 +7,7 @@ import (
 type (
 	// DeployWorkflowRequest structure
 	DeployWorkflowRequest struct {
-		WorkflowModelList []Repo.WorkflowModel
+		WorkflowModelList []Repo.WorkflowModel `json:"workflow_model_list"`
 	}
 	// DeployWorkflowlResponse structure
 	DeployWorkflowlResponse struct {
@@ -19,8 +19,8 @@ type (
 type (
 	// CreateWorkflowInstanceRequest structure
 	CreateWorkflowInstanceRequest struct {
-		WorkflowProcessID    string
-		WorkflowVariableList []Repo.WorkflowVariable
+		WorkflowProcessID    string                  `json:"workflow_process_id"`
+		WorkflowVariableList []Repo.WorkflowVariable `json:"workflow_variable_list"`
 	}
 	// CreateWorkflowInstanceResponse structure
 	CreateWorkflowInstanceResponse struct {

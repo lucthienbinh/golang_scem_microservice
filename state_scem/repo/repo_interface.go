@@ -29,13 +29,13 @@ type Repository interface {
 	// WorkflowJobQueue
 	CreateWorkflowJobQueue(ctx context.Context, workflowJobQueue WorkflowJobQueue) (uint, bool, error)
 	GetWorkflowJobQueueList(ctx context.Context) ([]WorkflowJobQueue, bool, error)
-	GetWorkflowJobQueueListByName(ctx context.Context, name string) ([]WorkflowJobQueue, bool, error)
+	GetWorkflowJobQueueListByMappingName(ctx context.Context, mappingName string) ([]WorkflowJobQueue, bool, error)
 	UpdateWorkflowJobQueue(ctx context.Context, id uint, workflowJobQueue WorkflowJobQueue) (bool, error)
 
 	// WorkflowMessageQueue
 	CreateWorkflowMessageQueue(ctx context.Context, workflowMessageQueue WorkflowMessageQueue) (uint, bool, error)
 	GetWorkflowMessageQueueList(ctx context.Context) ([]WorkflowMessageQueue, bool, error)
-	GetWorkflowMessageQueueListbyName(ctx context.Context, name string) ([]WorkflowMessageQueue, bool, error)
+	GetWorkflowMessageQueueListByMappingName(ctx context.Context, mappingName string) ([]WorkflowMessageQueue, bool, error)
 	UpdateWorkflowMessageQueue(ctx context.Context, id uint, workflowMessageQueue WorkflowMessageQueue) (bool, error)
 }
 

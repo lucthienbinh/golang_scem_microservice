@@ -105,7 +105,7 @@ func main() {
 	}, fieldKeys)
 	addRepository := repo.NewSQLRepo(db, logger)
 	addService := service.NewService(addRepository, logger)
-	addEndpoints := endpoint.MakeEndpoints(addService, requestCount, requestLatency)
+	addEndpoints := endpoint.MakeEndpoints(addService, logger, requestCount, requestLatency)
 	grpcServer := transport.NewGRPCServer(addEndpoints, logger)
 
 	// --------------- Listen to kill signal ---------------

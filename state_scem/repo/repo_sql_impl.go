@@ -163,9 +163,9 @@ func (repo *sqlRepo) GetWorkflowJobQueueList(_ context.Context) ([]WorkflowJobQu
 	return workflowJobQueue, true, nil
 }
 
-func (repo *sqlRepo) GetWorkflowJobQueueListByName(_ context.Context, name string) ([]WorkflowJobQueue, bool, error) {
+func (repo *sqlRepo) GetWorkflowJobQueueListByMappingName(_ context.Context, mappingName string) ([]WorkflowJobQueue, bool, error) {
 	workflowJobQueue := []WorkflowJobQueue{}
-	if err := repo.db.Order("id asc").Find(&workflowJobQueue, "name = ?", name).Error; err != nil {
+	if err := repo.db.Order("id asc").Find(&workflowJobQueue, "mapping_name = ?", mappingName).Error; err != nil {
 		return nil, false, err
 	}
 	return workflowJobQueue, true, nil
@@ -197,9 +197,9 @@ func (repo *sqlRepo) GetWorkflowMessageQueueList(_ context.Context) ([]WorkflowM
 	return workflowMessageQueue, true, nil
 }
 
-func (repo *sqlRepo) GetWorkflowMessageQueueListbyName(_ context.Context, name string) ([]WorkflowMessageQueue, bool, error) {
+func (repo *sqlRepo) GetWorkflowMessageQueueListByMappingName(_ context.Context, mappingName string) ([]WorkflowMessageQueue, bool, error) {
 	workflowMessageQueue := []WorkflowMessageQueue{}
-	if err := repo.db.Order("id asc").Find(&workflowMessageQueue, "name = ?", name).Error; err != nil {
+	if err := repo.db.Order("id asc").Find(&workflowMessageQueue, "mapping_name = ?", mappingName).Error; err != nil {
 		return nil, false, err
 	}
 	return workflowMessageQueue, true, nil

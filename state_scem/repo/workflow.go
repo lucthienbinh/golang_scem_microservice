@@ -11,6 +11,7 @@ type WorkflowModel struct {
 	Step                   int    `json:"step"`
 	Type                   int    `json:"type"`
 	Name                   string `json:"name"`
+	MappingName            string `json:"mapping_name"`
 	NextStep1              int    `json:"next_step_1"`
 	NextStep2              int    `json:"next_step_2"`
 	ServiceRetry           int    `json:"service_retry"`
@@ -53,7 +54,7 @@ type WorkflowVariable struct {
 type WorkflowJobQueue struct {
 	ID                 uint   `gorm:"primary_key;<-:false" json:"id"`
 	WorkflowInstanceID uint   `json:"workflow_instance_id"`
-	Name               string `json:"name"`
+	MappingName        string `json:"mapping_name"`
 	RetryRemain        int    `json:"retry_remain"`
 	Finished           bool   `json:"finished"`
 	Failed             bool   `json:"failed"`
@@ -64,7 +65,7 @@ type WorkflowJobQueue struct {
 type WorkflowMessageQueue struct {
 	ID                      uint   `json:"id"`
 	WorkflowInstanceID      uint   `json:"workflow_instance_id"`
-	Name                    string `json:"name"`
+	MappingName             string `json:"mapping_name"`
 	MessageCorrelationName  string `json:"message_correlation_name"`
 	MessageCorrelationValue int    `json:"message_correlation_value"`
 	Finished                bool   `json:"finished"`
