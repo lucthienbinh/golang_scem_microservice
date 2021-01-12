@@ -19,11 +19,12 @@ type (
 type (
 	// CreateWorkflowInstanceRequest structure
 	CreateWorkflowInstanceRequest struct {
-		WorkflowProcessID    string                  `json:"workflow_process_id"`
-		WorkflowVariableList []Repo.WorkflowVariable `json:"workflow_variable_list"`
+		WorkflowProcessID    string                `json:"workflow_process_id"`
+		WorkflowVariableList Repo.WorkflowVariable `json:"workflow_variable_list"`
 	}
 	// CreateWorkflowInstanceResponse structure
 	CreateWorkflowInstanceResponse struct {
+		WorkflowKey        string
 		WorkflowInstanceID uint
 		Ok                 bool
 	}

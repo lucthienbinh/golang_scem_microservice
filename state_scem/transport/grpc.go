@@ -42,6 +42,14 @@ func (s *gRPCServer) DeployWorkflow(ctx context.Context, req *pb.DeployWorkflowR
 	return resp.(*pb.DeployWorkflowlResponse), nil
 }
 
+func (s *gRPCServer) CreateWorkflowInstance(ctx context.Context, req *pb.CreateWorkflowInstanceRequest) (*pb.CreateWorkflowInstanceResponse, error) {
+	_, resp, err := s.createWorkflowInstance.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*pb.CreateWorkflowInstanceResponse), nil
+}
+
 func decodeDeployWorkflowRequest(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(*pb.DeployWorkflowRequest)
 	requestDecoded := endpoint.DeployWorkflowRequest{}
@@ -65,11 +73,11 @@ func decodeCreateWorkflowInstanceRequest(_ context.Context, request interface{})
 	// Parse json to struct
 	json.Unmarshal(byteValue, &requestDecoded)
 	return endpoint.CreateWorkflowInstanceRequest{
-		WorkflowProcessID:    requestDecoded.WorkflowProcessID,
+		WorkflowProcessID:    req.WorkflowProcessID,
 		WorkflowVariableList: requestDecoded.WorkflowVariableList}, nil
 }
 
 func encodeCreateWorkflowInstanceResponse(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(endpoint.CreateWorkflowInstanceResponse)
-	return &pb.CreateWorkflowInstanceResponse{WorkflowInstanceID: int32(resp.WorkflowInstanceID), Ok: resp.Ok}, nil
+	return &pb.CreateWorkflowInstanceResponse{WorkflowKey: resp.WorkflowKey, WorkflowInstanceID: int32(resp.WorkflowInstanceID), Ok: resp.Ok}, nil
 }

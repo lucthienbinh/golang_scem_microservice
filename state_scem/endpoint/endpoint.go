@@ -54,7 +54,7 @@ func (ec *endpointCounter) makeDeployWorkflowEndpoint() endpoint.Endpoint {
 func (ec *endpointCounter) makeCreateWorkflowInstanceEndpoint() endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateWorkflowInstanceRequest)
-		newInstanceID, ok, err := ec.service.CreateWorkflowInstanceService(ctx, req.WorkflowProcessID, req.WorkflowVariableList)
+		workflowKey, newInstanceID, ok, err := ec.service.CreateWorkflowInstanceService(ctx, req.WorkflowProcessID, req.WorkflowVariableList)
 		methodName := "CreateWorkflowInstance Endpoint"
 		// COPY THIS STACK TO OBSERVE TIME
 		defer func(begin time.Time) {
@@ -64,6 +64,6 @@ func (ec *endpointCounter) makeCreateWorkflowInstanceEndpoint() endpoint.Endpoin
 			level.Info(ec.logger).Log("method", methodName, "duration", time.Since(begin))
 		}(time.Now())
 		// COPY THIS STACK TO OBSERVE TIME
-		return CreateWorkflowInstanceResponse{WorkflowInstanceID: newInstanceID, Ok: ok}, err
+		return CreateWorkflowInstanceResponse{WorkflowKey: workflowKey, WorkflowInstanceID: newInstanceID, Ok: ok}, err
 	}
 }

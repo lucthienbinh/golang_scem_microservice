@@ -44,10 +44,14 @@ type WorkflowRuningPath struct {
 
 // WorkflowVariable structure
 type WorkflowVariable struct {
-	ID                 uint   `gorm:"primary_key;<-:false" json:"id"`
-	WorkflowInstanceID uint   `json:"workflow_instance_id"`
-	VariableName       string `json:"variable_name"`
-	VariableValue      string `json:"variable_value"`
+	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
+	WorkflowInstanceID  uint   `json:"workflow_instance_id"`
+	OrderID             uint   `json:"order_id"`
+	PayMethod           string `json:"pay_method"`
+	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
+	UseShortShip        bool   `json:"use_short_ship"`
+	UseLongShip         bool   `json:"use_long_ship"`
+	CustomerReceiveID   uint   `json:"customer_receive_id"`
 }
 
 // WorkflowJobQueue structure
